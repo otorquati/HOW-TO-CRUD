@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import ModalForm from "./components/ModalForm";
 import NavBar from "./components/NavBar";
@@ -11,6 +11,19 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [clientData, setClientData] = useState(null);
   const [tableData, setTableData] = useState([]);
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/clients')
+      setTableData(response.data);
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
+  useEffect(() => {
+		fetchClients();
+	},[]);
   
   const handleOpen = (mode, client) => {
     setClientData(client)
@@ -29,14 +42,12 @@ function App() {
       }
       console.log("modal mode Add");
     } else {
-      console.log("modal mode Edit");
       console.log("Atualizando Cliente com id:", clientData.id);
         try{
             const response = await axios.put(`http://localhost:3000/api/clients/${clientData.id}`, newClientData)
-            console.log('Cliente adicionado:', response.data);
-            setTableData((prevData) =>
-              prevData.map((client) => (client.id === clientData.id ? response.data : client))
-          );
+            console.log('Cliente atualizado:', response.data);
+            setTableData((prevData) => 
+              prevData.map((client) => (client.id === clientData.id ? response.data : client)));
         } catch (error) {
           console.error('Erro ao atualizar cliente', error);
       }

@@ -1,24 +1,30 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
-export default function TableList({ handleOpen, searchTerm }) {
-	const [tableData, setTableData] = useState([]);
+import { useState} from "react";
+export default function TableList({ handleOpen, searchTerm , tableData, setTableData}) {
+
 	const [error, setError] = useState(null);
 	
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get('http://localhost:3000/api/clients')
-				setTableData(response.data);
-			} catch (err) {
-			setError(err.message);
-			}
-		};
-		fetchData();
-	},[]);
+
 
 	// Filter the tableData based on the searchTerm
-	const filterData = tableData.filter(client => client.name.toLowerCase().includes(searchTerm.toLowerCase()) || client.email.toLowerCase().includes(searchTerm.toLowerCase()) || client.job.toLowerCase().includes(searchTerm.toLowerCase()));
+	const filterData = tableData.filter(client => 
+		client.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+		client.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+		client.job.toLowerCase().includes(searchTerm.toLowerCase())
+	);
 
+	const handelDelete = async (id) => {
+		const confirmDelete = window.confirm("Tem certeza que deseja apagar este cliente?")
+		if (confirmDelete) {
+			try {
+				await axios.delete(`http://localhost:3000/api/clients/${id}`);
+				setTableData((prevData) =>
+					prevData.filter((client) => client.id !== id));
+			} catch (err) {
+				setError(err.message);
+			}
+		}
+	}
 	return (
 	  <>
 	  	{ error && <div className="alert alert-error">{error}</div>}
@@ -64,7 +70,7 @@ export default function TableList({ handleOpen, searchTerm }) {
 					</button>
 				  </td>
 				  <td>
-					<button className="btn btn-accent">Excluir</button>
+					<button className="btn btn-accent" onClick={() => handelDelete(client.id)}>Excluir</button>
 				  </td>
 				</tr>
 			  ))}

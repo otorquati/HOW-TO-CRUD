@@ -1,32 +1,27 @@
-export default function TableList({ handleOpen }) {
-	const clientes = [
-	  {
-		id: 1,
-		name: "Osvaldo Torquati",
-		email: "torquati.osvaldo@gmail.com",
-		job: "Desenvolvedor",
-		rate: "100",
-		isactive: true,
-	  },
-	  {
-		id: 2,
-		name: "Maria Hilda de S. Silva",
-		email: "souza.hildasilva@gmail.com",
-		job: "Coordenadora",
-		rate: "101",
-		isactive: true,
-	  },
-	  {
-		id: 3,
-		name: "Thiago Torquati",
-		email: "ttorquati@gmail.com",
-		job: "Desenvolvedor",
-		rate: "102",
-		isactive: false,
-	  },
-	];
+import axios from "axios";
+import { useState, useEffect } from "react";
+export default function TableList({ handleOpen, searchTerm }) {
+	const [tableData, setTableData] = useState([]);
+	const [error, setError] = useState(null);
+	
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get('http://localhost:3000/api/clients')
+				setTableData(response.data);
+			} catch (err) {
+			setError(err.message);
+			}
+		};
+		fetchData();
+	},[]);
+
+	// Filter the tableData based on the searchTerm
+	const filterData = tableData.filter(client => client.name.toLowerCase().includes(searchTerm.toLowerCase()) || client.email.toLowerCase().includes(searchTerm.toLowerCase()) || client.job.toLowerCase().includes(searchTerm.toLowerCase()));
+
 	return (
 	  <>
+	  	{ error && <div className="alert alert-error">{error}</div>}
 		<div className="mt-10">
 		  <table className="table">
 			{/* head */}
@@ -42,27 +37,27 @@ export default function TableList({ handleOpen }) {
 			</thead>
 			<tbody className="hover">
 			  {/* row 1 */}
-			  {clientes.map((cliente) => (
-				<tr>
-				  <th>{cliente.id}</th>
-				  <td>{cliente.name}</td>
-				  <td>{cliente.email}</td>
-				  <td>{cliente.job}</td>
-				  <td>{cliente.rate}</td>
+			  {filterData.map((client) => (
+				<tr key={client.id}>
+				  <th>{client.id}</th>
+				  <td>{client.name}</td>
+				  <td>{client.email}</td>
+				  <td>{client.job}</td>
+				  <td>{client.rate}</td>
 				  <td>
 					<button
 					  className={`btn rounded-full w-20 ${
-						cliente.isactive
+						client.isactive
 						  ? `btn-primary`
 						  : `btn-outline btn-primary`
 					  }`}
 					>
-					  {cliente.isactive ? `Ativo` : `Inativo`}
+					  {client.isactive ? `Ativo` : `Inativo`}
 					</button>
 				  </td>
 				  <td>
 					<button
-					  onClick={() => handleOpen("edit")}
+					  onClick={() => handleOpen("edit", client)}
 					  className="btn btn-secondary"
 					>
 					  Atualizar
